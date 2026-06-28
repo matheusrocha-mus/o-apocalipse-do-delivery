@@ -3,6 +3,13 @@
 const { relogioReal, TimeoutError } = require('../../src/resilience/clock');
 
 describe('relogioReal', () => {
+  describe('agora', () => {
+    it('retorna o instante atual como número', () => {
+      expect(typeof relogioReal.agora()).toBe('number');
+      expect(relogioReal.agora()).toBeGreaterThan(0);
+    });
+  });
+
   describe('aguardar', () => {
     it('resolve após o tempo solicitado', async () => {
       await expect(relogioReal.aguardar(10)).resolves.toBeUndefined();

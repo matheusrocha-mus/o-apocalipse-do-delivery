@@ -33,6 +33,8 @@ class CheckoutService {
       new CircuitBreaker({
         limiteErro: this.config.limiteErro,
         volumeMinimo: this.config.volumeMinimo,
+        cooldownMs: this.config.cooldownMs,
+        agora: () => this.relogio.agora(),
       });
   }
 
@@ -42,7 +44,7 @@ class CheckoutService {
    * informa o controlador qual HTTP devolver.
    */
   async processar(pedido) {
-    if (this.circuitBreaker.aberto()) {
+    if (!this.circuitBreaker.permiteRequisicao()) {
       return this.#acionarFallback(pedido);
     }
 
@@ -69,6 +71,7 @@ class CheckoutService {
       {
         maxTentativas: this.config.maxTentativas,
         backoffMs: this.config.backoffMs,
+        jitterMs: this.config.jitterMs,
         aguardar: (ms) => this.relogio.aguardar(ms),
         ehRetentavel: ehErroDeInfra,
       },

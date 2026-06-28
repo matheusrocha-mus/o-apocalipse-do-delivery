@@ -53,6 +53,7 @@ function emailEspiao() {
 
 /** Relógio falso: não espera de verdade e repassa a promessa sem timeout. */
 const relogioInstantaneo = {
+  agora: () => 0,
   aguardar: async () => undefined,
   comTimeout: (promessa) => promessa,
 };

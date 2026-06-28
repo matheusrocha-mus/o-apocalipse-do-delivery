@@ -1,0 +1,8 @@
+[
+  {
+    "name": "gateway",
+    "listen": "127.0.0.1:21090",
+    "upstream": "127.0.0.1:9090",
+    "enabled": true
+  }
+]

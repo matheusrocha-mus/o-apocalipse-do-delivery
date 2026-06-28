@@ -49,6 +49,31 @@ describe('executarComRetry', () => {
     expect(opts.aguardar).toHaveBeenCalledTimes(3); // não espera após a última
   });
 
+  it('soma jitter aleatório ao backoff entre as tentativas', async () => {
+    const operacao = jest
+      .fn()
+      .mockRejectedValueOnce(new Error('falha'))
+      .mockResolvedValue('ok');
+    const opts = opcoes({ backoffMs: 500, jitterMs: 200, aleatorio: () => 0.5 });
+
+    await executarComRetry(operacao, opts);
+
+    // 500 + floor(0.5 * 200) = 600
+    expect(opts.aguardar).toHaveBeenCalledWith(600);
+  });
+
+  it('sem jitter (jitterMs 0) mantém o backoff fixo da RN06', async () => {
+    const operacao = jest
+      .fn()
+      .mockRejectedValueOnce(new Error('falha'))
+      .mockResolvedValue('ok');
+    const opts = opcoes({ backoffMs: 500, jitterMs: 0, aleatorio: () => 0.99 });
+
+    await executarComRetry(operacao, opts);
+
+    expect(opts.aguardar).toHaveBeenCalledWith(500);
+  });
+
   it('com maxTentativas 0 não executa a operação e rejeita (guarda defensiva)', async () => {
     const operacao = jest.fn();
     const opts = opcoes({ maxTentativas: 0 });

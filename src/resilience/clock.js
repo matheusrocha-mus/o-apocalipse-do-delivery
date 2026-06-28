@@ -18,6 +18,11 @@ class TimeoutError extends Error {
  * reais e com asserção sobre os tempos usados).
  */
 const relogioReal = {
+  /** Instante atual em ms (injetável para o cooldown do circuit breaker). */
+  agora() {
+    return Date.now();
+  },
+
   /** Aguarda `ms` milissegundos. Usado pelo backoff (RN06). */
   aguardar(ms) {
     return new Promise((resolve) => setTimeout(resolve, ms));

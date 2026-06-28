@@ -40,6 +40,8 @@ describe('CheckoutService', () => {
       expect(salvo.status).toBe(STATUS.PROCESSADO);
       expect(servico.circuitBreaker).toBeInstanceOf(CircuitBreaker);
       expect(servico.config.timeoutMs).toBe(2000);
+      // o breaker padrão usa o relógio real do serviço (agora numérico)
+      expect(typeof servico.circuitBreaker.agora()).toBe('number');
     });
 
     it('repassa os limites de config ao circuit breaker criado por padrão', () => {

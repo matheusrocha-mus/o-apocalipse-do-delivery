@@ -58,6 +58,7 @@ function erroConexao() {
  */
 function relogioFake() {
   return {
+    agora: jest.fn(() => 0),
     aguardar: jest.fn().mockResolvedValue(undefined),
     comTimeout: jest.fn((promessa) => promessa),
   };
