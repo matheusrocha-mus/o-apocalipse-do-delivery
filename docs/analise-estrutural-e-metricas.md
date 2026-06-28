@@ -82,8 +82,7 @@ $$
 
 O grafo plano delimita 3 regiões (2 regiões internas fechadas + 1 região externa) → $V(G) = \mathbf{3}$.
 
-> **Resultado: V(G) = 3.** O método possui **3 caminhos independentes** — número
-> mínimo de casos de teste para cobertura de caminhos básicos (*basis path coverage*).
+> **Resultado: V(G) = 3.** O método possui **3 caminhos independentes** — número mínimo de casos de teste para cobertura de caminhos básicos (*basis path coverage*).
 
 ### 2.4. Caminhos independentes (base)
 
@@ -97,9 +96,7 @@ O grafo plano delimita 3 regiões (2 regiões internas fechadas + 1 região exte
 
 ## 3. Análise de cobertura e *gap* estrutural (legado × especificação)
 
-A matriz de rastreabilidade da especificação define **5 fluxos**, mas o legado só
-implementa estruturalmente **3** (V(G)=3). Isto evidencia a dívida técnica que as
-Os eventuais redesign e refatoração deverão saldar:
+A matriz de rastreabilidade da especificação define **5 fluxos**, mas o legado só implementa estruturalmente **3** (V(G)=3). Isto evidencia a dívida técnica que os eventuais redesign e refatoração deverão saldar:
 
 | Fluxo da especificação                     | Coberto pelo legado?  | Observação estrutural                                                                                              |
 | :------------------------------------------- | :-------------------- | :------------------------------------------------------------------------------------------------------------------- |
@@ -109,19 +106,13 @@ Os eventuais redesign e refatoração deverão saldar:
 | Fluxo 4 — Caos (`ERRO_GATEWAY`)           | ⚠️ parcial (CP3)    | `catch` existe, mas falha "bruta": sem 3 retentativas, sem *circuit breaker*, sem *timeout* de 2s (RN04/RN07). |
 | Fluxo 5 — Contrato (`400 Bad Request`)    | ❌ fora do componente | Validação está no`server.js`, não em `processar`.                                                            |
 
-**Conclusão:** o redesign introduzirá *timeout*, *retry/backoff* e *circuit breaker*,
-elevando a complexidade ciclomática do componente. A meta de *clean code* será manter
-**V(G) ≤ ~4 por método**, extraindo a política de resiliência (Extract Method /
-objeto de política) em vez de inchar `processar` com `if/else` aninhados — caso
-contrário a complexidade alvo do fluxo monolítico saltaria para ~9–10.
+**Conclusão:** o redesign introduzirá *timeout*, *retry/backoff* e *circuit breaker*, elevando a complexidade ciclomática do componente. A meta de *clean code* será manter **V(G) ≤ ~4 por método**, extraindo a política de resiliência (Extract Method / objeto de política) em vez de inchar `processar` com `if/else` aninhados — caso contrário a complexidade alvo do fluxo monolítico saltaria para ~9–10.
 
 ---
 
 ## 4. Documento Formal de Estimativa de Esforço de Teste
 
-Técnica adotada: **Análise de Pontos de Função (APF) adaptada para testes** — contamos
-os Pontos de Função da funcionalidade, ajustamos pelo Fator de Ajuste (características
-de sistema críticas nesta Black Friday) e convertemos os PF ajustados em horas de
+Técnica adotada: **Análise de Pontos de Função (APF) adaptada para testes** — contamos os Pontos de Função da funcionalidade, ajustamos pelo Fator de Ajuste (características de sistema críticas nesta Black Friday) e convertemos os PF ajustados em horas de
 teste por um índice de produtividade específico de QA.
 
 ### 4.1. Funções de dados
@@ -173,17 +164,14 @@ $$
 
 ### 4.6. Conversão PF → esforço de teste
 
-Índice de produtividade de teste adotado: **4,0 h/PF**. Este índice cobre o ciclo
-completo de qualidade exigido pelo trabalho (não apenas codificação): planejamento,
-BDD, automação unitária/integração via TDD, endurecimento por mutação (meta ≥90%) e
+Índice de produtividade de teste adotado: **4,0 h/PF**. Este índice cobre o ciclo completo de qualidade exigido pelo trabalho (não apenas codificação): planejamento, BDD, automação unitária/integração via TDD, endurecimento por mutação (meta ≥90%) e
 caos/performance.
 
 $$
 \text{Esforço base} = 29\ PF \times 4{,}0\ \text{h/PF} = \mathbf{116\ h}
 $$
 
-**Reserva de risco (+15%)** — sobrevivência de mutantes/equivalentes, tuning de
-*thresholds* k6 e ajuste fino do Toxiproxy:
+**Reserva de risco (+15%)** — sobrevivência de mutantes/equivalentes, tuning de *thresholds* k6 e ajuste fino do Toxiproxy:
 
 $$
 \text{Esforço total} = 116 \times 1{,}15 \approx \mathbf{133\ horas/homem}

@@ -15,16 +15,13 @@ npm test        # suíte Jest (unitário + integração) com cobertura
 npm run test:bdd  # cenários Gherkin (Cucumber)
 ```
 
-Resultado atual: **57 testes Jest verdes**, **100% de cobertura de branches** do
-código de produção, **5 cenários BDD verdes**.
+Resultado atual: **57 testes Jest verdes**, **100% de cobertura de branches** do código de produção, **5 cenários BDD verdes**.
 
 ---
 
 ## 2. Especificação viva — BDD (Gherkin)
 
-Arquivo: [`features/checkout.feature`](../features/checkout.feature) — escrito em
-português (`# language: pt`), estrutura **Dado-Quando-Então**. Cada cenário mapeia
-um fluxo da matriz de rastreabilidade da especificação:
+Arquivo: [`features/checkout.feature`](../features/checkout.feature) — escrito em português (`# language: pt`), estrutura **Dado-Quando-Então**. Cada cenário mapeia um fluxo da matriz de rastreabilidade da especificação:
 
 | Cenário Gherkin                            | Fluxo   | Status final     | HTTP |
 | :------------------------------------------ | :------ | :--------------- | :--- |
@@ -34,13 +31,9 @@ um fluxo da matriz de rastreabilidade da especificação:
 | Caos total (esgota retentativas)            | Fluxo 4 | `ERRO_GATEWAY` | 500  |
 | Circuit breaker aberto curto-circuita       | RN07    | `ERRO_GATEWAY` | 500  |
 
-> O Fluxo 5 (payload incompleto → 400) é validado na camada de controle e coberto
-> por testes unitários de [`validacaoCheckout`](../src/http/validacaoCheckout.js).
+> O Fluxo 5 (payload incompleto → 400) é validado na camada de controle e coberto por testes unitários de [`validacaoCheckout`](../src/http/validacaoCheckout.js).
 
-Os *steps* ([`features/steps/checkout.steps.js`](../features/steps/checkout.steps.js))
-usam dublês manuais (sem Jest, pois o Cucumber roda fora dele) e um *World*
-([`features/support/world.js`](../features/support/world.js)) que centraliza o
-estado, evitando variáveis globais.
+Os *steps* ([`features/steps/checkout.steps.js`](../features/steps/checkout.steps.js)) usam dublês manuais (sem Jest, pois o Cucumber roda fora dele) e um *World* ([`features/support/world.js`](../features/support/world.js)) que centraliza o estado, evitando variáveis globais.
 
 ---
 
@@ -48,15 +41,11 @@ estado, evitando variáveis globais.
 
 O desenvolvimento seguiu *baby steps*. Exemplo do fluxo de resiliência:
 
-1. **🔴 Vermelho:** escrito o teste "executa 1 retry, recupera-se e conclui como
-   `PROCESSADO`" — falha, pois o legado não tinha retry.
+1. **🔴 Vermelho:** escrito o teste "executa 1 retry, recupera-se e conclui como `PROCESSADO`" — falha, pois o legado não tinha retry.
 2. **🟢 Verde:** implementado `executarComRetry` com o mínimo para passar.
-3. **🔵 Refatore:** extraída a espera para um relógio injetável (`clock`),
-   parametrizado o backoff e classificado o erro retentável em módulo próprio —
-   testes seguem verdes.
+3. **🔵 Refatore:** extraída a espera para um relógio injetável (`clock`), parametrizado o backoff e classificado o erro retentável em módulo próprio — testes seguem verdes.
 
-O mesmo ciclo guiou timeout (RN04), circuit breaker (RN07) e o disparo assíncrono
-de e-mail (RF02).
+O mesmo ciclo guiou timeout (RN04), circuit breaker (RN07) e o disparo assíncrono de e-mail (RF02).
 
 ---
 
@@ -64,9 +53,7 @@ de e-mail (RF02).
 
 ### 4.1. Data Builder + Object Mother
 
-[`test/builders/PedidoBuilder.js`](../test/builders/PedidoBuilder.js) — API fluente
-(`umPedido().comValor(0).semCartao().build()`). Cada teste declara só o que é
-relevante; o resto vem de um padrão válido. Combate o *smell* **Obscure Setup**.
+[`test/builders/PedidoBuilder.js`](../test/builders/PedidoBuilder.js) — API fluente (`umPedido().comValor(0).semCartao().build()`). Cada teste declara só o que é relevante; o resto vem de um padrão válido. Combate o *smell* **Obscure Setup**.
 
 ### 4.2. Stubs (estado) × Mocks (comportamento)
 
@@ -79,8 +66,7 @@ relevante; o resto vem de um padrão válido. Combate o *smell* **Obscure Setup*
 | `emailMock`                                                    | **Mock** | asserção de comportamento: e-mail enviado**só** no sucesso |
 | `relogioFake`                                                  | **Stub** | torna backoff/timeout determinísticos (sem espera real)            |
 
-A regra de negócio crítica (RN03: "jamais enviar e-mail em pedido `FALHOU`") é
-verificada por um Mock: `expect(email.enviarConfirmacao).not.toHaveBeenCalled()`.
+A regra de negócio crítica (RN03: "jamais enviar e-mail em pedido `FALHOU`") é verificada por um Mock: `expect(email.enviarConfirmacao).not.toHaveBeenCalled()`.
 
 ---
 

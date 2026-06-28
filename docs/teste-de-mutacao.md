@@ -4,9 +4,7 @@
 **Meta obrigatória:** Mutation Score ≥ 90% (tabela de avaliação)
 **Resultado alcançado:** **99,51%** ✅
 
-> 100% de cobertura de linhas não garante eficácia. O teste de mutação injeta
-> defeitos artificiais (mutantes) no código de produção e verifica se a suíte os
-> detecta ("mata"). Mutantes que sobrevivem revelam asserções fracas.
+> 100% de cobertura de linhas não garante eficácia. O teste de mutação injeta defeitos artificiais (mutantes) no código de produção e verifica se a suíte os detecta ("mata"). Mutantes que sobrevivem revelam asserções fracas.
 
 ---
 
@@ -16,10 +14,7 @@
 npm run test:mutation
 ```
 
-Relatório HTML navegável gerado em `reports/mutation/index.html`.
-Configuração em [`stryker.conf.json`](../stryker.conf.json): runner Jest,
-`coverageAnalysis: perTest`, alvo `src/**/*.js` (exceto `server.js`, que é apenas
-*wiring* do Express), e `break threshold = 90`.
+Relatório HTML navegável gerado em `reports/mutation/index.html`. Configuração em [`stryker.conf.json`](../stryker.conf.json): runner Jest, `coverageAnalysis: perTest`, alvo `src/**/*.js` (exceto `server.js`, que é apenas *wiring* do Express), e `break threshold = 90`.
 
 ---
 
@@ -41,8 +36,7 @@ Configuração em [`stryker.conf.json`](../stryker.conf.json): runner Jest,
 
 ## 3. Evolução: 1ª execução → suíte endurecida
 
-A primeira rodada deu **92,61%** com 15 mutantes sobreviventes. Cada sobrevivente
-expôs uma fraqueza real de asserção, corrigida com testes dirigidos:
+A primeira rodada deu **92,61%** com 15 mutantes sobreviventes. Cada sobrevivente expôs uma fraqueza real de asserção, corrigida com testes dirigidos:
 
 | Mutante sobrevivente                                         | Por que sobreviveu                                                                | Teste que passou a matá-lo                                                                            |
 | :----------------------------------------------------------- | :-------------------------------------------------------------------------------- | :----------------------------------------------------------------------------------------------------- |
@@ -57,15 +51,13 @@ expôs uma fraqueza real de asserção, corrigida com testes dirigidos:
 | `Number.isFinite(valor)` (condicional)                     | `Infinity` não era testado                                                     | `Infinity`/`-Infinity` adicionados aos valores rejeitados                                          |
 | `clearTimeout(timer)` (cleanup) → removido                | ninguém observava a limpeza do timer                                             | spy em`clearTimeout` após `comTimeout` resolver                                                   |
 
-Resultado: de **75 testes** a suíte passou a matar 200 mutantes, subindo o score de
-92,61% para **99,51%**.
+Resultado: de **75 testes** a suíte passou a matar 200 mutantes, subindo o score de 92,61% para **99,51%**.
 
 ---
 
 ## 4. Análise do mutante sobrevivente (mutante equivalente)
 
-Resta **1 sobrevivente**, e ele é **equivalente** — semanticamente idêntico ao
-original, portanto **impossível de matar por qualquer teste**:
+Resta **1 sobrevivente**, e ele é **equivalente** — semanticamente idêntico ao original, portanto **impossível de matar por qualquer teste**:
 
 **Local:** [`src/http/validacaoCheckout.js:11`](../src/http/validacaoCheckout.js#L11)
 
@@ -82,26 +74,14 @@ return true && Number.isFinite(valor) && valor > 0;
 ```
 
 **Justificativa técnica da equivalência:**
-`Number.isFinite(x)` (método estático do ES2015, diferente do global `isFinite`)
-retorna `true` **somente** quando `x` já é do tipo `number` — ele **não coage**
-valores. Logo, sempre que `Number.isFinite(valor)` é verdadeiro, `typeof valor === 'number'` também é. A primeira condição é, portanto, **logicamente redundante**:
-para todo valor de entrada possível (string, `null`, `BigInt`, `Symbol`, `Infinity`,
-objeto, etc.), o resultado da expressão original e o da mutada são idênticos. Não
-existe entrada capaz de distinguir os dois ramos — o mutante é **equivalente** e foi
-deliberadamente mantido.
+`Number.isFinite(x)` (método estático do ES2015, diferente do global `isFinite`) retorna `true` **somente** quando `x` já é do tipo `number` — ele **não coage** valores. Logo, sempre que `Number.isFinite(valor)` é verdadeiro, `typeof valor === 'number'` também é. A primeira condição é, portanto, **logicamente redundante**: para todo valor de entrada possível (string, `null`, `BigInt`, `Symbol`, `Infinity`, objeto, etc.), o resultado da expressão original e o da mutada são idênticos. Não existe entrada capaz de distinguir os dois ramos — o mutante é **equivalente** e foi deliberadamente mantido.
 
-> Observação de clean code: a checagem `typeof` é mantida no código por clareza de
-> intenção e robustez a refatorações futuras, mesmo sendo redundante hoje.
+> Observação de clean code: a checagem `typeof` é mantida no código por clareza de intenção e robustez a refatorações futuras, mesmo sendo redundante hoje.
 
 ---
 
 ## 5. Notas de execução
 
-- **2 mutantes por timeout** (em `executarComRetry` e `clock`): contam como
-  **mortos** — o mutante criou laço/espera que estourou o tempo-limite, ou seja,
-  foi detectado.
-- **5 erros de runtime** em mutações de `clock.js` (timers reais): o Stryker os
-  classifica em bucket próprio, **fora do denominador** do score — não penalizam
-  nem inflam o resultado.
-- O score efetivo de **99,51%** considera 200 mortos / (200 mortos + 1 equivalente
-  sobrevivente), muito acima da meta de 90%.
+- **2 mutantes por timeout** (em `executarComRetry` e `clock`): contam como **mortos** — o mutante criou laço/espera que estourou o tempo-limite, ou seja, foi detectado.
+- **5 erros de runtime** em mutações de `clock.js` (timers reais): o Stryker os classifica em bucket próprio, **fora do denominador** do score — não penalizam nem inflam o resultado.
+- O score efetivo de **99,51%** considera 200 mortos / (200 mortos + 1 equivalente sobrevivente), muito acima da meta de 90%.
