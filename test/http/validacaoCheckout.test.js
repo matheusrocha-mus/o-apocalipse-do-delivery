@@ -10,15 +10,43 @@ describe('validarPayloadCheckout (Fluxo 5 - contrato)', () => {
     expect(erros).toHaveLength(0);
   });
 
-  it('rejeita e-mail sem formato válido', () => {
-    const { valido, erros } = validarPayloadCheckout(umPedido().comEmail('sem-arroba').build());
+  it.each([
+    'sem-arroba',
+    'plainaddress',
+    '@semlocal.com',
+    'a@semtld',
+    'a@.com',
+    'a@b.',
+    'a@@b.com',
+    ' a@b.com', // espaço inicial: exercita a âncora ^
+    'a@b.com ', // espaço final: exercita a âncora $
+  ])('rejeita e-mail mal formado (%p)', (email) => {
+    const { valido, erros } = validarPayloadCheckout(umPedido().comEmail(email).build());
     expect(valido).toBe(false);
     expect(erros).toContain('clienteEmail ausente ou inválido');
   });
 
-  it.each([0, -1, '100', null, NaN])('rejeita valor inválido (%p)', (valor) => {
-    const { valido } = validarPayloadCheckout(umPedido().comValor(valor).build());
+  it('rejeita e-mail que não é string mesmo que coerça para um padrão válido', () => {
+    // ['a@b.com'] vira "a@b.com" se coagido — o typeof guard precisa barrar.
+    const { valido } = validarPayloadCheckout(umPedido().comEmail(['a@b.com']).build());
     expect(valido).toBe(false);
+  });
+
+  it('aceita e-mail válido no limite mínimo (a@b.co)', () => {
+    expect(validarPayloadCheckout(umPedido().comEmail('a@b.co').build()).valido).toBe(true);
+  });
+
+  it.each([0, -1, '100', null, NaN, Infinity, -Infinity, true])(
+    'rejeita valor inválido (%p)',
+    (valor) => {
+      const { valido, erros } = validarPayloadCheckout(umPedido().comValor(valor).build());
+      expect(valido).toBe(false);
+      expect(erros).toContain('valor deve ser numérico e maior que zero');
+    },
+  );
+
+  it('aceita o menor valor positivo possível', () => {
+    expect(validarPayloadCheckout(umPedido().comValor(0.01).build()).valido).toBe(true);
   });
 
   it('rejeita pedido sem cartão', () => {

@@ -25,6 +25,13 @@ describe('relogioReal', () => {
       const quebrada = Promise.reject(erro);
       await expect(relogioReal.comTimeout(quebrada, 100)).rejects.toBe(erro);
     });
+
+    it('limpa o timer (clearTimeout) quando a promessa resolve antes do limite', async () => {
+      const spy = jest.spyOn(global, 'clearTimeout');
+      await relogioReal.comTimeout(Promise.resolve('ok'), 1000);
+      expect(spy).toHaveBeenCalled();
+      spy.mockRestore();
+    });
   });
 
   describe('TimeoutError', () => {

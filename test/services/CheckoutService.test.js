@@ -41,6 +41,18 @@ describe('CheckoutService', () => {
       expect(servico.circuitBreaker).toBeInstanceOf(CircuitBreaker);
       expect(servico.config.timeoutMs).toBe(2000);
     });
+
+    it('repassa os limites de config ao circuit breaker criado por padrão', () => {
+      const servico = new CheckoutService(
+        gatewayQueResponde('APROVADO'),
+        repositorioEmMemoria(),
+        emailMock(),
+        { config: { limiteErro: 0.9, volumeMinimo: 7 } },
+      );
+
+      expect(servico.circuitBreaker.limiteErro).toBe(0.9);
+      expect(servico.circuitBreaker.volumeMinimo).toBe(7);
+    });
   });
 
   describe('Fluxo 1 — pagamento aprovado (caminho feliz)', () => {
@@ -64,7 +76,8 @@ describe('CheckoutService', () => {
       expect(email.enviarConfirmacao).toHaveBeenCalledWith('ana@entregaja.com', 'Pagamento Aprovado');
     });
 
-    it('não bloqueia a resposta caso o envio do e-mail falhe', async () => {
+    it('não bloqueia a resposta e registra log quando o envio do e-mail falha', async () => {
+      const erroSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
       const email = emailMock();
       email.enviarConfirmacao.mockRejectedValue(new Error('SMTP fora do ar'));
       const { servico } = montarServico(gatewayQueResponde('APROVADO'), { email });
@@ -73,6 +86,11 @@ describe('CheckoutService', () => {
       await drenarPromises();
 
       expect(salvo.status).toBe(STATUS.PROCESSADO);
+      expect(erroSpy).toHaveBeenCalledWith(
+        expect.stringContaining('Falha ao enviar e-mail'),
+        'SMTP fora do ar',
+      );
+      erroSpy.mockRestore();
     });
   });
 
@@ -125,7 +143,7 @@ describe('CheckoutService', () => {
       const salvo = await servico.processar(umPedido().build());
 
       expect(gateway.cobrar).toHaveBeenCalledTimes(4);
-      expect(salvo.status).toBe(STATUS.ERRO_GATEWAY);
+      expect(salvo.status).toBe('ERRO_GATEWAY'); // literal: ancora o valor da constante STATUS
       expect(repositorio.salvar).toHaveBeenCalledTimes(1);
       expect(email.enviarConfirmacao).not.toHaveBeenCalled();
     });

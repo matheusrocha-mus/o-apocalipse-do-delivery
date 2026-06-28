@@ -11,6 +11,18 @@ describe('CircuitBreaker', () => {
     expect(cb.total).toBe(0);
   });
 
+  it('expõe os rótulos literais de estado FECHADO/ABERTO', () => {
+    expect(ESTADOS.FECHADO).toBe('FECHADO');
+    expect(ESTADOS.ABERTO).toBe('ABERTO');
+
+    const fechado = new CircuitBreaker({ limiteErro: 0.5, volumeMinimo: 1 });
+    expect(fechado.estado).toBe('FECHADO');
+
+    const aberto = new CircuitBreaker({ limiteErro: 0.5, volumeMinimo: 1 });
+    aberto.registrarFalha();
+    expect(aberto.estado).toBe('ABERTO');
+  });
+
   it('não abre enquanto não atingir o volume mínimo, mesmo com 100% de erro', () => {
     const cb = new CircuitBreaker({ limiteErro: 0.5, volumeMinimo: 4 });
     cb.registrarFalha();

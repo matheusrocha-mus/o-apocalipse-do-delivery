@@ -25,6 +25,10 @@ describe('ehErroDeInfra', () => {
     expect(ehErroDeInfra({ status: 499 })).toBe(false);
   });
 
+  it('exige que status seja numérico (string "600" não conta como 5xx)', () => {
+    expect(ehErroDeInfra({ status: '600' })).toBe(false);
+  });
+
   it('NÃO classifica erro comum sem código/status conhecido', () => {
     expect(ehErroDeInfra(new Error('erro qualquer'))).toBe(false);
   });
