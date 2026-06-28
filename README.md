@@ -1,17 +1,66 @@
 # O Apocalipse do Delivery
 
-Intrgrantes
-* Aluno 1
-* Aluno 2
+**Integrantes**
 
+* Gustavo Delfino Guimarães
+* Julia Medeiros Silva
+* Matheus Caetano Rocha
+* Thiago Borges Laass
 
-Como as Fases se Conectam a este Código
+## Como rodar
 
-**Fase 1 (Análise & Métricas)**
-Vocês calcularão a Complexidade Ciclomática do método processar(pedido). Notem que ele tem caminhos lógicos bem claros baseados no status do pagamento e no bloco catch.
+```bash
+npm install
+npm test            # testes unitários/integração (Jest) + cobertura
+npm run test:bdd    # especificação viva (Cucumber/Gherkin)
+npm run test:mutation   # teste de mutação (Stryker)
+npm start           # sobe o servidor em http://localhost:3000
+```
 
-**Fase 2 (Refatoração & Patterns)**
-O e-mail síncrono acoplado dentro do fluxo de aprovação é um erro clássico de design. Vocês devem usar a refatoração para extrair essa lógica e garantir via Mocks (no Jest) se o e-mail foi chamado adequadamente, ou usar Stubs para injetar respostas malformadas do gateway.
+Ferramentas de caos (k6 + Toxiproxy) são binários nativos baixados sob demanda:
+`pwsh chaos/scripts/baixar-binarios.ps1`.
 
-**Fase 4 (Caos & SRE)**
-No arquivo server.js, a função gatewayPagamentoMock.cobrar simula uma promessa de 300ms. Quando vocês configurarem o Toxiproxy, vocês interceptarão essa chamada externa e forçarão uma latência de 5000ms. O k6 vai disparar requisições para /api/v1/checkout e o grupo deverá avaliar se o Express vai sofrer um colapso ou se o código de vocês (redesenhado com circuit breaker ou timeouts curtos) vai proteger o servidor.
+## Mapa de artefatos por fase
+
+| Fase                                | Artefato                                                    | Onde                                                                                                                                                        |
+| :---------------------------------- | :---------------------------------------------------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **1 — Análise & Métricas** | Grafo de fluxo, V(G)=3 e estimativa (APF, horas/homem)      | [docs/analise-estrutural-e-metricas.md](docs/analise-estrutural-e-metricas.md)                                                                                 |
+| **2 — TDD/BDD/Patterns**     | Redesenho, Data Builder, Stubs/Mocks, refatorações Fowler | [docs/redesign-tdd-bdd-patterns.md](docs/redesign-tdd-bdd-patterns.md)                                                                                         |
+| **2 — BDD**                  | Especificação viva (6 cenários)                          | [features/checkout.feature](features/checkout.feature)                                                                                                         |
+| **3 — Mutação**            | Análise (score**99,63%**) e mutante equivalente      | [docs/teste-de-mutacao.md](docs/teste-de-mutacao.md)                                                                                                           |
+| **3 — Relatório**           | Relatório HTML do Stryker                                  | [docs/relatorios/mutation/index.html](docs/relatorios/mutation/index.html)                                                                                     |
+| **4 — Caos & SRE**           | Runbook, SLO, degradação graciosa e MTTR                  | [docs/caos-e-performance.md](docs/caos-e-performance.md)                                                                                                       |
+| **4 — Gráficos k6**         | Dashboards de desempenho                                    | [baseline](docs/relatorios/k6/baseline.html) · [gateway-lento](docs/relatorios/k6/gateway-lento.html) · [thundering-herd](docs/relatorios/k6/thundering-herd.html) |
+
+> Especificação de requisitos do sistema: [docs/especificacao.md](docs/especificacao.md).
+
+## Como (re)gerar os relatórios
+
+```bash
+# Relatório de mutação -> docs/relatorios/mutation/index.html
+npm run test:mutation
+
+# Gráficos k6 (com o ambiente de caos no ar)
+pwsh chaos/scripts/iniciar-ambiente.ps1
+K6_WEB_DASHBOARD=true K6_WEB_DASHBOARD_EXPORT=docs/relatorios/k6/baseline.html tools/k6.exe run chaos/k6/load-test.js
+pwsh chaos/scripts/injetar-caos.ps1 gateway-lento   # injeta 5000ms durante a carga
+pwsh chaos/scripts/parar-ambiente.ps1
+```
+
+Experimento automatizado de MTTR (injeta o caos, mede abertura do breaker e recuperação): `bash chaos/scripts/experimento-mttr.sh`.
+
+## Estrutura
+
+```
+src/            código de produção (resiliência, serviço, validação, gateway HTTP)
+test/           suíte Jest (builders, stubs/mocks, specs por módulo)
+features/       BDD (Gherkin + steps + world)
+chaos/          gateway simulado, scripts k6, setup Toxiproxy e runbook
+docs/           documentos das 4 fases + relatórios (mutação e k6)
+```
+
+## Resultados (resumo)
+
+- **57 → 93 testes** Jest verdes · **6 cenários** BDD · cobertura 100% de branches
+- **Mutation Score 99,63%** (1 mutante equivalente justificado)
+- Sob gateway 100% indisponível: servidor **não colapsa** (≈3.000 req/s, *fast-fail*) e **recupera em ≈2,7 s (MTTR)**
