@@ -62,26 +62,38 @@ Para a Black Friday "de verdade", suba a carga: `VUS_PICO=500 tools\k6.exe run c
 
 ## 4. Resultados medidos
 
-### 4.1. Baseline (sem caos) — `load-test.js`, 20 VUs
+Gráficos completos (relatórios HTML do dashboard do k6, versionados):
+- Baseline: [`docs/relatorios/k6/baseline.html`](relatorios/k6/baseline.html)
+- Gateway Lento: [`docs/relatorios/k6/gateway-lento.html`](relatorios/k6/gateway-lento.html)
+- Thundering Herd: [`docs/relatorios/k6/thundering-herd.html`](relatorios/k6/thundering-herd.html)
+
+### 4.1. Baseline (sem caos) — `load-test.js`, 30 VUs
 
 | Métrica                       | Resultado           | SLO       | Status |
 | :----------------------------- | :------------------ | :-------- | :----- |
-| `http_req_duration{200}` p95 | **325,86 ms** | < 2500 ms | ✅     |
+| `http_req_duration{200}` p95 | **331,28 ms** | < 2500 ms | ✅     |
 | `http_req_failed`            | **0,00%**     | < 5%      | ✅     |
 | `servidor_respondeu`         | **100,00%**   | > 99%     | ✅     |
-| Iterações                    | 894 (≈ 49 req/s)   | —        | —     |
+| Iterações                    | 2.595 (≈ 74 req/s) | —        | —     |
 
-### 4.2. Sob caos "Gateway Lento" (+5000 ms) — `load-test.js`, 20 VUs, 20 s
+### 4.2. Sob caos "Gateway Lento" (+5000 ms) — `load-test.js`, 30 VUs, 30 s
 
 | Métrica               | Resultado                      | Interpretação                                                 |
 | :--------------------- | :----------------------------- | :-------------------------------------------------------------- |
-| `http_req_failed`    | **100%**                 | SLO de erro**violado de propósito** — gateway inviável |
-| `servidor_respondeu` | **100%** (33.929/33.929) | **servidor NUNCA colapsou**                               |
-| Vazão                 | **1.382 req/s**          | absorveu a carga mesmo em falha                                 |
-| Latência mediana      | **2,13 ms**              | *fast-fail* após o breaker abrir                             |
-| Latência máx         | **10,14 s**              | requisições da janela de detecção (antes do CB abrir)       |
+| `http_req_failed`    | **100%**                 | SLO de erro **violado de propósito** — gateway inviável |
+| `servidor_respondeu` | **100%** (89.687/89.687) | **servidor NUNCA colapsou**                               |
+| Vazão                 | **≈ 2.989 req/s**        | absorveu a carga mesmo em falha                                 |
+| Latência mediana      | **3,66 ms**              | *fast-fail* após o breaker abrir                             |
+| Latência máx         | **10,2 s**               | requisições da janela de detecção (antes do CB abrir)       |
 
-**Leitura:** sem proteção, 5 s de latência × carga esgotaria o pool de threads do Express e derrubaria o processo (colapso). Com timeout (2 s) + retry + circuit breaker, o sistema passa a **falhar rápido (~2 ms)** e continua de pé a 1.382 req/s. Essa é a **degradação graciosa**.
+**Leitura:** sem proteção, 5 s de latência × carga esgotaria o pool de threads do Express e derrubaria o processo (colapso). Com timeout (2 s) + retry + circuit breaker, o sistema passa a **falhar rápido (~poucos ms)** e continua de pé a ~2.989 req/s. Essa é a **degradação graciosa**.
+
+### 4.2.1. Thundering Herd — `thundering-herd.js`, 800 req/s, 20 s
+
+Flush abrupto do cache seguido de pico de chegada constante. Resultado: **15.809
+requisições, `servidor_respondeu` 100%, `http_req_failed` 0%**, p95 564 ms — o
+banco simulado sobrevive à manada graças ao backoff+jitter e ao circuit breaker.
+(Suba `TAXA` para se aproximar das 10.000 simultâneas do enunciado.)
 
 ### 4.3. Ciclo completo de incidente e MTTR — `experimento-mttr.sh`
 

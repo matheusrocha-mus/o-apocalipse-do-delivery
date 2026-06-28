@@ -43,6 +43,16 @@ function gatewayForaDoAr() {
   };
 }
 
+function gatewayQueDaTimeout() {
+  return {
+    cobrar: espiar(async () => {
+      const erro = new Error('Operação excedeu o timeout');
+      erro.code = 'ETIMEDOUT';
+      throw erro;
+    }),
+  };
+}
+
 function repositorioEmMemoria() {
   return { salvar: espiar(async (pedido) => ({ ...pedido, id: 1 })) };
 }
@@ -63,6 +73,7 @@ module.exports = {
   gatewayQueResponde,
   gatewayInstavel,
   gatewayForaDoAr,
+  gatewayQueDaTimeout,
   repositorioEmMemoria,
   emailEspiao,
   relogioInstantaneo,

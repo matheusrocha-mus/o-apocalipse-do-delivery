@@ -14,7 +14,7 @@
 npm run test:mutation
 ```
 
-Relatório HTML navegável gerado em `reports/mutation/index.html`. Configuração em [`stryker.conf.json`](../stryker.conf.json): runner Jest, `coverageAnalysis: perTest`, alvo `src/**/*.js` (exceto `server.js`, que é apenas *wiring* do Express), e `break threshold = 90`.
+Relatório HTML navegável (versionado) em [`docs/relatorios/mutation/index.html`](relatorios/mutation/index.html). Configuração em [`stryker.conf.json`](../stryker.conf.json): runner Jest, `coverageAnalysis: perTest`, alvo `src/**/*.js` (exceto `server.js`, que é apenas *wiring* do Express), e `break threshold = 90`.
 
 ---
 

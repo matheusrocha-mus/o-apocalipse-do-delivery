@@ -10,6 +10,7 @@ const {
   gatewayQueResponde,
   gatewayInstavel,
   gatewayForaDoAr,
+  gatewayQueDaTimeout,
 } = require('../support/dublesManuais');
 
 const drenarPromises = () => Promise.resolve().then(() => Promise.resolve());
@@ -32,6 +33,10 @@ Given('que o gateway falha 1 vez por instabilidade e depois responde {string}', 
 
 Given('que o gateway está fora do ar permanentemente', function () {
   this.gateway = gatewayForaDoAr();
+});
+
+Given('que o gateway sofre timeout em todas as tentativas', function () {
+  this.gateway = gatewayQueDaTimeout();
 });
 
 Given('que o disjuntor já está aberto por excesso de falhas de rede', function () {

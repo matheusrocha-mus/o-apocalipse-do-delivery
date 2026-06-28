@@ -26,6 +26,13 @@ Funcionalidade: Checkout resiliente de pedidos
     E o pedido deve terminar com status "PROCESSADO"
     E o e-mail de confirmação deve ser enviado
 
+  Cenário: Timeout do gateway (não responde dentro do limite)
+    Dado que o gateway sofre timeout em todas as tentativas
+    Quando o checkout é processado
+    Então o pedido deve terminar com status "ERRO_GATEWAY"
+    E o e-mail de confirmação não deve ser enviado
+    E nenhuma exceção deve ter derrubado o serviço
+
   Cenário: Fluxo 4 - Caos total (esgota as retentativas)
     Dado que o gateway está fora do ar permanentemente
     Quando o checkout é processado
