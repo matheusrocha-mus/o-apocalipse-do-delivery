@@ -1,5 +1,10 @@
 # Sobe o ambiente de caos: Toxiproxy + gateway simulado + proxy + app.
-# Uso: pwsh chaos/scripts/iniciar-ambiente.ps1
+# Uso:
+#   pwsh chaos/scripts/iniciar-ambiente.ps1                 # cooldown padrão (10s)
+#   pwsh chaos/scripts/iniciar-ambiente.ps1 -CooldownMs 5000  # demo do vídeo (MTTR rápido)
+param(
+  [int]$CooldownMs = 10000
+)
 $ErrorActionPreference = 'Stop'
 
 $proj  = Resolve-Path (Join-Path $PSScriptRoot '..\..')
@@ -19,8 +24,8 @@ Write-Host '>>> Criando o proxy gateway (21090 -> 9090)...'
 
 Write-Host '>>> Iniciando o app (porta 3000) apontando para o Toxiproxy...'
 $env:GATEWAY_URL = 'http://127.0.0.1:21090'
-$env:JITTER_MS   = '250'      # jitter anti-thundering-herd
-$env:COOLDOWN_MS = '10000'    # cooldown do circuit breaker
+$env:JITTER_MS   = '250'              # jitter anti-thundering-herd
+$env:COOLDOWN_MS = "$CooldownMs"      # cooldown do circuit breaker
 Start-Process -FilePath 'node' -ArgumentList "`"$proj\src\server.js`"" -WindowStyle Hidden
 Start-Sleep -Seconds 2
 

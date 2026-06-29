@@ -18,7 +18,7 @@ npm start           # sobe o servidor em http://localhost:3000
 ```
 
 Ferramentas de caos (k6 + Toxiproxy) são binários nativos baixados sob demanda:
-`pwsh chaos/scripts/baixar-binarios.ps1`.
+`powershell -ExecutionPolicy Bypass -File chaos/scripts/baixar-binarios.ps1`.
 
 ## Mapa de artefatos por fase
 
@@ -41,10 +41,10 @@ Ferramentas de caos (k6 + Toxiproxy) são binários nativos baixados sob demanda
 npm run test:mutation
 
 # Gráficos k6 (com o ambiente de caos no ar)
-pwsh chaos/scripts/iniciar-ambiente.ps1
+powershell -ExecutionPolicy Bypass -File chaos/scripts/iniciar-ambiente.ps1
 K6_WEB_DASHBOARD=true K6_WEB_DASHBOARD_EXPORT=docs/relatorios/k6/baseline.html tools/k6.exe run chaos/k6/load-test.js
-pwsh chaos/scripts/injetar-caos.ps1 gateway-lento   # injeta 5000ms durante a carga
-pwsh chaos/scripts/parar-ambiente.ps1
+powershell -ExecutionPolicy Bypass -File chaos/scripts/injetar-caos.ps1 gateway-lento   # injeta 5000ms durante a carga
+powershell -ExecutionPolicy Bypass -File chaos/scripts/parar-ambiente.ps1
 ```
 
 Experimento automatizado de MTTR (injeta o caos, mede abertura do breaker e recuperação): `bash chaos/scripts/experimento-mttr.sh`.

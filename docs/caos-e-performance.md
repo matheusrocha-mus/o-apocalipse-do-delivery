@@ -26,22 +26,22 @@ Para o Toxiproxy poder "envenenar" a chamada ao gateway, ela precisa ser uma cha
 
 ```powershell
 # 1. Sobe Toxiproxy + gateway simulado + proxy + app
-pwsh chaos/scripts/iniciar-ambiente.ps1
+powershell -ExecutionPolicy Bypass -File chaos/scripts/iniciar-ambiente.ps1
 
 # 2. (terminal A) carga k6 — escolha o cenário
 tools\k6.exe run chaos/k6/load-test.js          # ramp-up/steady/ramp-down
 tools\k6.exe run chaos/k6/thundering-herd.js     # manada estourada
 
 # 3. (terminal B) injeta o caos no meio da carga
-pwsh chaos/scripts/injetar-caos.ps1 gateway-lento   # +5000ms (RN04)
-pwsh chaos/scripts/injetar-caos.ps1 gateway-down     # queda total
-pwsh chaos/scripts/injetar-caos.ps1 limpar           # remove o caos (recuperação)
+powershell -ExecutionPolicy Bypass -File chaos/scripts/injetar-caos.ps1 gateway-lento   # +5000ms (RN04)
+powershell -ExecutionPolicy Bypass -File chaos/scripts/injetar-caos.ps1 gateway-down     # queda total
+powershell -ExecutionPolicy Bypass -File chaos/scripts/injetar-caos.ps1 limpar           # remove o caos (recuperação)
 
 # 4. Experimento de MTTR automatizado (injeta, mede abertura e recuperação)
 bash chaos/scripts/experimento-mttr.sh
 
 # 5. Encerra tudo
-pwsh chaos/scripts/parar-ambiente.ps1
+powershell -ExecutionPolicy Bypass -File chaos/scripts/parar-ambiente.ps1
 ```
 
 Para a Black Friday "de verdade", suba a carga: `VUS_PICO=500 tools\k6.exe run chaos/k6/load-test.js` ou `TAXA=2000 tools\k6.exe run chaos/k6/thundering-herd.js`.
