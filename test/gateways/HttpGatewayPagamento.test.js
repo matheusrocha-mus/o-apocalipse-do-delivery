@@ -9,6 +9,11 @@ function respostaFake(status, corpo = {}) {
 describe('HttpGatewayPagamento', () => {
   const BASE = 'http://localhost:21090';
 
+  it('usa o fetch global por padrão quando nenhum é injetado', () => {
+    const gw = new HttpGatewayPagamento(BASE);
+    expect(gw.fetch).toBe(globalThis.fetch);
+  });
+
   it('faz POST em /cobrar e devolve o corpo JSON em caso de sucesso', async () => {
     const fetchImpl = jest.fn().mockResolvedValue(respostaFake(200, { status: 'APROVADO' }));
     const gw = new HttpGatewayPagamento(BASE, fetchImpl);

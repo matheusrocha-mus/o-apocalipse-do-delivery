@@ -30,8 +30,11 @@ switch ($tipo) {
   }
   'limpar' {
     Write-Host '>>> Limpando toxicos e reabilitando o proxy' -ForegroundColor Green
-    & $cli toxic remove -n lat gateway 2>$null
+    # 2>&1 manda o stderr para o stream de saida (evita o erro "toxic not found"
+    # quando nao ha toxico para remover); o try/catch e a rede de seguranca.
+    try { & $cli toxic remove -n lat gateway 2>&1 | Out-Null } catch {}
     Set-ProxyEnabled $true
+    Write-Host 'OK: proxy sem toxicos e habilitado.' -ForegroundColor Green
   }
 }
 & $cli inspect gateway
