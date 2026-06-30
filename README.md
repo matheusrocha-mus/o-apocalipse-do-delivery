@@ -64,3 +64,7 @@ docs/           documentos das 4 fases + relatórios (mutação e k6)
 - **57 → 93 testes** Jest verdes · **6 cenários** BDD · cobertura 100% de branches
 - **Mutation Score 99,63%** (1 mutante equivalente justificado)
 - Sob gateway 100% indisponível: servidor **não colapsa** (≈3.000 req/s, *fast-fail*) e **recupera em ≈2,7 s (MTTR)**
+
+## Vídeo
+
+[Link](https://youtu.be/xrslGu-lLEI) para o vídeo demonstração do projeto
